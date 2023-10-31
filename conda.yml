@@ -1,0 +1,11 @@
+name: mbespc
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - GDAL==3.6.0
+  - pip
+  - pip:
+    - click==8.1.3
+    - git+https://github.com/ausseabed/qajson.git
