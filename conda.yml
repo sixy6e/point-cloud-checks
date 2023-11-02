@@ -5,7 +5,11 @@ channels:
 dependencies:
   - python>=3.10
   - GDAL==3.6.0
+  - numpy==1.23.5
+  - pyproj==3.4.1
   - pip
   - pip:
+    - pytest
     - click==8.1.3
+    - laspy
     - git+https://github.com/ausseabed/qajson.git

@@ -1,3 +1,8 @@
+# project specifics
+
+tests/generated_test_data
+
+
 # MacOS gitignore
 
 # General
