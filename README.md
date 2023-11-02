@@ -1,6 +1,7 @@
 # point-cloud-checks
 Point cloud checks for bathymetry data
 
+
 # Installation
 
 Assumes a miniconda Python distribution has been installed.
@@ -15,11 +16,22 @@ Assumes a miniconda Python distribution has been installed.
 
 Note: to install a development version include the `-e` parameter in the last command (e.g.; `pip install -e .`).
 
+
+# Running
+
+A specific point cloud check can be run via the command line once installed. The following command will run the point cloud based density check.
+
+    mbespc density-check -pf ./tests/generated_test_data/test.las -gf ./tests/generated_test_data/test.tif
+
+Note: the test files included in the above command can be automatically generated, see [here](#generating-test-datasets).
+
+
 # Testing
 
 To run unit tests
 
     pytest -s
+
 
 ## Generating test datasets
 

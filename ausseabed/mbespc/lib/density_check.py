@@ -20,6 +20,3 @@ class ResolutionIndependentDensityCheck():
         # total number of nodes that failed density check
         self.failed_nodes = 0
 
-        # TODO: all the actual check stuff, update above values with output
-        raise RuntimeError(f"{self.__name__}.run is not implemented")
-
