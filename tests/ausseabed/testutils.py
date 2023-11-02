@@ -4,9 +4,12 @@ Collection of utils used by test cases
 
 import laspy
 import numpy as np
+import osgeo
 import random
 import pyproj
+import pyproj.enums
 
+from osgeo import gdal, osr
 from pathlib import Path
 
 
@@ -80,4 +83,62 @@ class LasTestFileBuilder():
         las.Z = z_np
         las.update_header()
         las.write(str(self.output_file))
+
+
+class TifTestFileBuilder():
+    """
+    Build a simple tif file that includes the values given in a 2d array
+    """
+
+    def __init__(
+        self,
+        values: list[list[int]],
+        top_left_x: float,
+        top_left_y: float,
+        resolution: float,
+        crs: pyproj.CRS,
+        output_file: Path
+    ) -> None:
+        self.values = values
+        self.top_left_x = top_left_x
+        self.top_left_y = top_left_y
+        self.resolution = resolution
+        self.crs = crs
+        self.output_file = output_file
+
+    def run(self):
+        """
+        Run the process to build the test geotiff
+        """
+        driver = gdal.GetDriverByName("GTiff")
+        dst_ds = driver.Create(
+            str(self.output_file),
+            len(self.values[0]),
+            len(self.values),
+            1,
+            gdal.GDT_Int16
+        )
+        np_2d_array = np.array(self.values, dtype=np.int16)
+        
+        dst_ds.GetRasterBand(1).WriteArray(np_2d_array)
+        dst_ds.GetRasterBand(1).SetNoDataValue(-9999)
+
+        # top left x, w-e pixel resolution, rotation, top left y, rotation, n-s pixel resolution
+        dst_ds.SetGeoTransform([
+            self.top_left_x,
+            self.resolution,
+            0,
+            self.top_left_y,
+            0,
+            -1.0 * self.resolution
+        ])
+
+        osr_crs = osr.SpatialReference()
+        if osgeo.version_info.major < 3:
+            osr_crs.ImportFromWkt(self.crs.to_wkt(pyproj.enums.WktVersion.WKT1_GDAL))
+        else:
+            osr_crs.ImportFromWkt(self.crs.to_wkt())
+
+        dst_ds.SetProjection( osr_crs.ExportToWkt() )
+        dst_ds = None
 
