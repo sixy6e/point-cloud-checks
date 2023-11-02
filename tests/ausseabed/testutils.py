@@ -19,15 +19,15 @@ class LasTestFileBuilder():
     def __init__(
         self,
         densities: list[list[int]],
-        top_right_x: float,
-        top_right_y: float,
+        top_left_x: float,
+        top_left_y: float,
         resolution: float,
         crs: pyproj.CRS,
         output_file: Path
     ) -> None:
         self.densities = densities
-        self.top_right_x = top_right_x
-        self.top_right_y = top_right_y
+        self.top_left_x = top_left_x
+        self.top_left_y = top_left_y
         self.resolution = resolution
         self.crs = crs
         self.output_file = output_file
@@ -37,8 +37,8 @@ class LasTestFileBuilder():
         y_coordinates:list[float] = []
         z_coordinates:list[float] = []
 
-        x = self.top_right_x
-        y = self.top_right_y
+        x = self.top_left_x
+        y = self.top_left_y
         for row in self.densities:
             # loop through all the rows of the grid
             for col in row:
@@ -59,7 +59,8 @@ class LasTestFileBuilder():
                     z_coordinates.append(pt_z)
 
                 x += self.resolution
-            x = self.top_right_x
+
+            x = self.top_left_x
             y -= self.resolution
 
         x_np = np.array(x_coordinates, dtype=np.int32)
