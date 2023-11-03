@@ -60,6 +60,7 @@ def test_tiftestbuilder():
         crs=pyproj.CRS.from_epsg(3857),
         output_file=test_tif_file
     )
+    tb.band_name = "density"
     tb.run()
 
 

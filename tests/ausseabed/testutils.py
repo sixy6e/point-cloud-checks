@@ -106,6 +106,9 @@ class TifTestFileBuilder():
         self.crs = crs
         self.output_file = output_file
 
+        # optional band name used to set the description field in tif metadata
+        self.band_name = None
+
     def run(self):
         """
         Run the process to build the test geotiff
@@ -122,6 +125,9 @@ class TifTestFileBuilder():
         
         dst_ds.GetRasterBand(1).WriteArray(np_2d_array)
         dst_ds.GetRasterBand(1).SetNoDataValue(-9999)
+
+        if self.band_name:
+            dst_ds.GetRasterBand(1).SetDescription(self.band_name)
 
         # top left x, w-e pixel resolution, rotation, top left y, rotation, n-s pixel resolution
         dst_ds.SetGeoTransform([
