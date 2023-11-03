@@ -148,3 +148,34 @@ class TifTestFileBuilder():
         dst_ds.SetProjection( osr_crs.ExportToWkt() )
         dst_ds = None
 
+
+def build_las_and_tif_densities(
+        las_file: Path,
+        tif_file: Path,
+        densities: list[list[int]]
+    ):
+    """
+    Creats a las file with points distributed randomly to match that of the densities
+    array. A density tif file is also created. 
+    """
+    # FWIW the coordinates and CRS details below generate a grid over Port Phillip
+    # Bay in Victoria
+    lb = LasTestFileBuilder(
+        densities=densities,
+        top_left_x=16129836,
+        top_left_y=-4572563,
+        resolution=1000,
+        crs=pyproj.CRS.from_epsg(3857),
+        output_file=las_file
+    )
+    lb.run()
+
+    tb = TifTestFileBuilder(
+        values=densities,
+        top_left_x=16129836,
+        top_left_y=-4572563,
+        resolution=1000,
+        crs=pyproj.CRS.from_epsg(3857),
+        output_file=tif_file
+    )
+    tb.run()
