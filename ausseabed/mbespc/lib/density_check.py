@@ -4,7 +4,16 @@ Resolution independent density check
 
 from pathlib import Path
 
-class ResolutionIndependentDensityCheck():
+
+from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
+
+
+class AlgorithmIndependentDensityCheck():
+
+    id = '1bdb56d7-a725-42b4-8c42-10dbe0c0dbda'
+    name = 'Algorithm Independent Density Check'
+    version = '1'
+    input_params = []
 
     def __init__(
         self,
