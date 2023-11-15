@@ -8,7 +8,7 @@
 import click
 from pathlib import Path
 
-from ausseabed.mbespc.lib.density_check import ResolutionIndependentDensityCheck
+from ausseabed.mbespc.lib.density_check import AlgorithmIndependentDensityCheck
 
 
 @click.group()
@@ -58,16 +58,48 @@ def qajson(
         "CRS will be extracted from this file."
     )
 )
-def density_check(point_file: Path, grid_file: Path):
+@click.option(
+    '-mc', '--minimum-count',
+    type=int,
+    default=5,
+    show_default=True,
+    help=(
+        "Minimum density value per cell. "
+    )
+)
+@click.option(
+    '-mcp', '--minimum-count-percentage',
+    type=float,
+    default=95.0,
+    show_default=True,
+    help=(
+        "Minimum density value per cell dataset percentage"
+    )
+)
+def density_check(
+        point_file: Path,
+        grid_file: Path,
+        minimum_count: int,
+        minimum_count_percentage: float
+    ):
     """ Command runs the resolution independent density check only
     """
-    density_check = ResolutionIndependentDensityCheck(
+    click.echo("Running density check")
+    density_check = AlgorithmIndependentDensityCheck(
         point_cloud_file=point_file,
-        grid_file=grid_file
+        grid_file=grid_file,
+        minimum_count=minimum_count,
+        minimum_count_percentage=minimum_count_percentage
     )
     density_check.run()
 
+    # print out some summary info from the check run
+    click.echo(f"Check passed: {density_check.passed}")
     click.echo(f"{density_check.failed_nodes} / {density_check.total_nodes} failed")
+    click.echo("Histogram (density value, cells count)")
+
+    hist_strs = [f"  {d : 3}, {c : 8}" for d,c in density_check.histogram]
+    click.echo("\n".join(hist_strs))
 
 
 if __name__ == '__main__':
