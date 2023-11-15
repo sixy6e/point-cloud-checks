@@ -1,3 +1,5 @@
+![Unit Tests workflow status](https://github.com/ausseabed/point-cloud-checks/actions/workflows/main.yml/badge.svg)
+
 # point-cloud-checks
 Point cloud checks for bathymetry data
 
