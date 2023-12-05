@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+# from typing import Self  # Self is avail >= py3.11
 
 
 # This driver definition might be simpler to define via attrs
@@ -17,13 +18,13 @@ class PdalDriver:
     a PDAL pipeline JSON construct.
     """
 
-    def __init__(self, uri: Path):
-        self.uri = uri
-        self._skip = ["uri"]
+    def __init__(self, pathname: Path):
+        self.pathname = pathname
+        self._skip = ["pathname"]
 
-    @classmethod
-    def from_uri(cls, uri: Path):
-        """Given a URI, derive the proper PDAL driver."""
+    @staticmethod
+    def from_string(uri: str) -> PdalDriver | DriverError:
+        """Given a string URI, derive the appropriate PDAL driver."""
         loader = {
             ".las": DriverLas,
             ".laz": DriverLas,
@@ -31,13 +32,15 @@ class PdalDriver:
             ".tdb": DriverTileDB,
         }
 
+        pth = Path(uri)
+
         try:
-            sub_cls = loader[uri.suffix]
+            sub_cls = loader[pth.suffix]
         except KeyError as err:
             msg = f"Could not determine driver for {uri}"
             raise DriverError(msg) from err
 
-        return sub_cls(uri)
+        return sub_cls(pth)
 
     def to_json(self):
         """
@@ -49,7 +52,7 @@ class PdalDriver:
         data = vars(self)
         json_d = {}
 
-        for key, val in data:
+        for key, val in data.items():
             if key in self._skip:
                 continue
             if key[0] == "_":
@@ -66,17 +69,17 @@ class PdalDriver:
 class DriverLas(PdalDriver):
     """Driver specific to LAS/LAZ files."""
 
-    def __init__(self, uri: Path):
+    def __init__(self, pathname: Path):
         self.type = "readers.las"
-        self.filename = str(uri)
-        super().__init__(uri)
+        self.filename = str(pathname)
+        super().__init__(pathname)
 
 
 class DriverTileDB(PdalDriver):
     """Driver specific to TileDB point cloud arrays."""
 
-    def __init__(self, uri: Path):
+    def __init__(self, pathname: Path):
         self.type = "readers.tiledb"
         self.strict = False
-        self.array_name = str(uri)
-        super().__init__(uri)
+        self.array_name = str(pathname)
+        super().__init__(pathname)
