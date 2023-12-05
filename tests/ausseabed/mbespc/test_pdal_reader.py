@@ -39,3 +39,18 @@ class TestPdalDriver:
             _ = pdal_reader.PdalDriver.from_uri(self.unknown)
 
         assert str(excinfo.value) == "Could not determine driver for data.unknown"
+
+
+@pytest.mark.parametrize(
+    "uri, expected",
+    [
+        (Path("data.las"), '{"type": "readers.las", "filename": "data.las"}'),
+        (Path("data.laz"), '{"type": "readers.las", "filename": "data.laz"}'),
+        (Path("data.tiledb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tiledb"}'),
+        (Path("data.tdb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tdb"}'),
+    ],
+)
+def test_to_json(uri, expected):
+    """Test that the json dump is as expected."""
+    drv = pdal_reader.PdalDriver.from_uri(uri)
+    assert drv.to_json() == expected
