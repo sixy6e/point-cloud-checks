@@ -47,12 +47,13 @@ def qajson(
 @click.option(
     '-pf', '--point-file',
     required=True,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, resolve_path=True),
     help="Path to input point cloud file"
 )
 @click.option(
     '-gf', '--grid-file',
     required=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, resolve_path=True),
     help=(
         "Path to input gridded file. Resolution, target extents, and "
         "CRS will be extracted from this file."
