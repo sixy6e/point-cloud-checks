@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Tuple
 import numpy
 import rasterio
 
@@ -26,7 +26,9 @@ def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> int:
     return max_
 
 
-def histogram_point_density(density_pathname: Path, maxv: int) -> numpy.ndarray:  # noqa: E501
+def histogram_point_density(
+    density_pathname: Path, maxv: int
+) -> Tuple[numpy.ndarray, numpy.ndarray]:
     """
     Calculate the frequency histogram of the point density grid layer.
     This routine works in chunked fashion to minimise memory use.
@@ -48,7 +50,7 @@ def histogram_point_density(density_pathname: Path, maxv: int) -> numpy.ndarray:
             h_tmp, _ = numpy.histogram(data, bins=bins, range=(0, maxv))
             hist += h_tmp
 
-    return hist
+    return hist, bins[:-1]
 
 
 def sanitize_properties(
