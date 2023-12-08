@@ -1,15 +1,13 @@
 import json
 from pathlib import Path
 # from typing import Self  # Self is avail >= py3.11
+from typing import Any, Dict
 
-
-# This driver definition might be simpler to define via attrs
+from ausseabed.mbespc.lib import errors, utils
 
 
 class DriverError(Exception):
     """Simple custom error for PDAL driver specifics."""
-
-    # TODO; see how qax handles errors, and remove this custom exception
 
 
 class PdalDriver:
@@ -23,8 +21,12 @@ class PdalDriver:
         self._skip = ["pathname"]
 
     @staticmethod
-    def from_string(uri: str) -> PdalDriver | DriverError:
-        """Given a string URI, derive the appropriate PDAL driver."""
+    def from_string(uri: str):  # -> Self | DriverError:
+        """
+        Given a string URI, derive the appropriate PDAL driver.
+        Reason for a str over a strict Path obj, is that Path will
+        strip certain protocol info.
+        """
         loader = {
             ".las": DriverLas,
             ".laz": DriverLas,
@@ -38,32 +40,28 @@ class PdalDriver:
             sub_cls = loader[pth.suffix]
         except KeyError as err:
             msg = f"Could not determine driver for {uri}"
-            raise DriverError(msg) from err
+            raise errors.MbesPcError(msg) from err
 
         return sub_cls(pth)
 
-    def to_json(self):
+    def to_json(self) -> str:
         """
         Export the PDAL reader type to JSON.
+        """
+        data = self.to_dict()
+
+        return json.dumps(data)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Export the PDAL reader type to dict.
         Private properties are ignored, as are empty strings and properties
         containing None;
         (If there is a future need for expanding reader options).
         """
         data = vars(self)
-        json_d = {}
 
-        for key, val in data.items():
-            if key in self._skip:
-                continue
-            if key[0] == "_":
-                continue
-            if val == "":
-                continue
-            if key is None:
-                continue
-            json_d[key] = val
-
-        return json.dumps(json_d)
+        return utils.sanitize_properties(data, self._skip)
 
 
 class DriverLas(PdalDriver):
