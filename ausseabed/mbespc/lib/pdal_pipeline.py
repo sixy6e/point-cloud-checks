@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import tempfile
+from typing import Tuple
 
 import numpy
 import rasterio  # type: ignore[import]
@@ -11,7 +12,7 @@ from ausseabed.mbespc.lib import pdal_reader, pdal_filter, pdal_writer, errors, 
 
 def density(
     grid_dataset_pathname: Path, point_cloud_pathname: Path
-) -> numpy.ndarray:  # noqa: E501
+) -> Tuple[numpy.ndarray, numpy.ndarray, int]:  # noqa: E501
     """
     Workflow for creating the density grid.
     """
@@ -25,7 +26,7 @@ def density(
             projection = pdal_filter.Reprojection.from_crs(src.crs)
 
             # writer
-            out_pathname = Path(tmpdir.name).joinpath("density.tiledb")  # type: ignore[attr-defined] # pylint: disable=line-too-long # noqa: E501
+            out_pathname = Path(tmpdir).joinpath("density.tiledb")  # type: ignore[attr-defined] # pylint: disable=line-too-long # noqa: E501
             writer = pdal_writer.GdalWriter.from_dataset(src, out_pathname)
 
             pipeline_stages = [
@@ -41,14 +42,14 @@ def density(
                 pipeline.execute_streaming()
             except Exception as err:
                 msg = f"Error running pipeline: {json_pipeline}"
-                raise errors.Exception(msg) from err
+                raise errors.MbesPcError(msg) from err
 
         # update density grid with no-data mask from base grid
-        maxv = utils.update_density_no_data(
+        maxv, cell_count = utils.update_density_no_data(
             grid_dataset_pathname, out_pathname
         )  # noqa: E501
 
         # calculate histogram of point density (not probability density)
-        hist = utils.histogram_point_density(out_pathname, maxv)
+        hist, bins = utils.histogram_point_density(out_pathname, maxv)
 
-    return hist
+    return hist, bins, cell_count

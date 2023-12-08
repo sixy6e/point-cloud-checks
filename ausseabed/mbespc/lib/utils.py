@@ -4,7 +4,7 @@ import numpy
 import rasterio
 
 
-def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> int:
+def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> Tuple[int, int]:
     """
     Update the density grid calculated via the PDAL pipeline by accounting
     for the base grids' no-data mask.
@@ -15,15 +15,17 @@ def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> int:
             # we need determine the max value in order to determine
             # appropriate upper bin for the histogram
             max_ = 0
+            cell_count = 0
             for _, window in den_src.block_windows():
                 d_data = den_src.read(1, window=window)
                 z_data = src.read(1, window=window)
                 mask = z_data == src.nodata
+                cell_count += (~mask).sum()
                 d_data[mask] = den_src.nodata
                 max_ = max(max_, numpy.max(d_data))
                 den_src.write(d_data, 1, window=window)
 
-    return max_
+    return max_, cell_count
 
 
 def histogram_point_density(

@@ -10,12 +10,11 @@ from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
 from ausseabed.mbespc.lib import pdal_pipeline
 
 
-class AlgorithmIndependentDensityCheck():
-
+class AlgorithmIndependentDensityCheck:
     # details used by the QAX plugin
-    id = '1bdb56d7-a725-42b4-8c42-10dbe0c0dbda'
-    name = 'Algorithm Independent Density Check'
-    version = '1'
+    id = "1bdb56d7-a725-42b4-8c42-10dbe0c0dbda"
+    name = "Algorithm Independent Density Check"
+    version = "1"
     input_params = [
         QajsonParam("Minimum Soundings per node", 5),
         QajsonParam("Minimum Soundings per node percentage", 95.0),
@@ -26,7 +25,7 @@ class AlgorithmIndependentDensityCheck():
         point_cloud_file: Path,
         grid_file: Path,
         minimum_count: int,
-        minimum_count_percentage: float
+        minimum_count_percentage: float,
     ) -> None:
         self.point_cloud_file = point_cloud_file
         self.grid_file = grid_file
@@ -53,14 +52,15 @@ class AlgorithmIndependentDensityCheck():
         #       it stores, we'll just extract resolution and corner coords
         # - Check how many nodes (pixels) of the grid are under the minimum_count
         #   and set the failed_nodes value
-        hist, bins = pdal_pipeline.density(self.grid_file, self.point_cloud_file)  # noqa: E501
-        hist_sum = hist.sum()
-        failed_nodes = (hist < self.input_params[0].value).sum()
-        percentage = (failed_nodes / hist_sum) * 100
-        passed = percentage < self.input_params[1].value
+        hist, bins, cell_count = pdal_pipeline.density(
+            self.grid_file, self.point_cloud_file
+        )  # noqa: E501
+        failed_nodes = hist[hist < self.minimum_count].sum()
+        percentage = (failed_nodes / cell_count) * 100
+        passed = (100 - percentage) > self.minimum_count_percentage
 
         # total number of non-nodata nodes in grid
-        self.total_nodes = hist_sum
+        self.total_nodes = cell_count
 
         # total number of nodes that failed density check
         self.failed_nodes = failed_nodes
