@@ -4,8 +4,10 @@ Resolution independent density check
 
 from pathlib import Path
 from typing import Optional
+import json
 
 from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
+from ausseabed.mbespc.lib import pdal_pipeline
 
 
 class AlgorithmIndependentDensityCheck():
@@ -32,15 +34,15 @@ class AlgorithmIndependentDensityCheck():
         self.minimum_count_percentage = minimum_count_percentage
 
         # total number of non-nodata nodes in grid
-        self.total_nodes:Optional[int] = None
+        self.total_nodes: Optional[int] = None
         # total number of nodes that failed density check
-        self.failed_nodes:Optional[int] = None
+        self.failed_nodes: Optional[int] = None
         # Did the check pass
-        self.passed:Optional[bool] = None
+        self.passed: Optional[bool] = None
         # histogram - list of tuples. First tuple item is the density count,
         # second tuple item is the number of grid cells that have this
         # density
-        self.histogram: Optional[list[tuple[int,int]]] = None
+        self.histogram: Optional[list[tuple[int, int]]] = None
 
     def run(self):
         # TODO: check implementation
@@ -51,20 +53,19 @@ class AlgorithmIndependentDensityCheck():
         #       it stores, we'll just extract resolution and corner coords
         # - Check how many nodes (pixels) of the grid are under the minimum_count
         #   and set the failed_nodes value
-
-        # NOTE: following code is placeholder / dummy values
+        hist, bins = pdal_pipeline.density(self.grid_file, self.point_cloud_file)  # noqa: E501
+        hist_sum = hist.sum()
+        failed_nodes = (hist < self.input_params[0].value).sum()
+        percentage = (failed_nodes / hist_sum) * 100
+        passed = percentage < self.input_params[1].value
 
         # total number of non-nodata nodes in grid
-        self.total_nodes = 100
+        self.total_nodes = hist_sum
+
         # total number of nodes that failed density check
-        self.failed_nodes = 4
-        self.passed = True
+        self.failed_nodes = failed_nodes
+
+        self.passed = passed
 
         # (density, number of cells that have that density)
-        self.histogram = [
-            (0, 10),
-            (1, 20),
-            (3, 40),
-            (4, 50),
-            (5, 60),
-        ]
+        self.histogram = list(zip(bins.tolist(), hist.tolist()))
