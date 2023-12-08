@@ -43,7 +43,7 @@ class GdalWriter:
             "TILEDB_TIMESTAMP=1",
         ]
         self.nodata = -9999
-        self.data_type = "int64"
+        self.data_type = "int"
 
     @classmethod
     def from_dataset(
