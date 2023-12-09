@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 # from typing import Self  # Self is avail >= py3.11
-from typing import Any, Dict
+from typing import Any, Dict, Type, Union
 
 from ausseabed.mbespc.lib import errors, utils
 
@@ -27,20 +27,22 @@ class PdalDriver:
         Reason for a str over a strict Path obj, is that Path will
         strip certain protocol info.
         """
-        loader = {
-            ".las": DriverLas,
-            ".laz": DriverLas,
-            ".tiledb": DriverTileDB,
-            ".tdb": DriverTileDB,
-        }
+        sub_cls: Union[Type[DriverLas], Type[DriverTileDB]]
 
         pth = Path(uri)
 
-        try:
-            sub_cls = loader[pth.suffix]
-        except KeyError as err:
-            msg = f"Could not determine driver for {uri}"
-            raise errors.MbesPcError(msg) from err
+        match pth.suffix:
+            case ".las":
+                sub_cls = DriverLas
+            case ".laz":
+                sub_cls = DriverLas
+            case ".tiledb":
+                sub_cls = DriverTileDB
+            case ".tdb":
+                sub_cls = DriverTileDB
+            case _:
+                msg = f"Could not determine driver for {uri}"
+                raise errors.MbesPcError(msg)
 
         return sub_cls(pth)
 
