@@ -9,6 +9,14 @@ def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> Tuple
     Update the density grid calculated via the PDAL pipeline by accounting
     for the base grids' no-data mask.
     The rationale is to exclude valid zero counts from no-data locations.
+
+    :param grid_pathname: Pathname to the base grid file
+    :type grid_pathname: class:`pathlib.Path`
+    :param density_pathname: Pathname to the density grid file
+    :type density_pathname: class:`pathlib.Path`
+    :return: A tuple of ints for the maximum cell density,
+       and the total of non-nodata pixels
+    :rtype: tuple
     """
     with rasterio.open(str(grid_pathname)) as src:
         with rasterio.open(str(density_pathname), "r+") as den_src:
@@ -36,6 +44,13 @@ def histogram_point_density(
     This routine works in chunked fashion to minimise memory use.
     The method works using a binsize of 1 to provide unique bins
     for values in the range [0, maxv].
+
+    :param density_pathname: Pathname to the density grid file
+    :type density_pathname: class:`pathlib.Path`
+    :param maxv: Maximum density value to be considered for the histogram
+    :type maxv: int
+    :return: A tuple of :class: `numpy.ndarray` objects
+    :rtype: tuple
     """
     # initialise the histogram that we'll update
     hist = numpy.zeros(maxv + 1, dtype="int64")
@@ -62,6 +77,14 @@ def sanitize_properties(
     Clean the exported properties of a class.
     Private properties are ignored, as are empty strings and properties
     containing None;
+
+    :param data: A dict containing the key value pairs from the
+        exported class
+    :type data: dict
+    :param skip: A list containing keys to skip, or None. Default is None
+    :type skip: list or None
+    :return: A dict containing only the sanitised key value pairs
+    :rtype: dict
     """
     if skip is None:
         skip = []
