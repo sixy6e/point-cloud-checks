@@ -26,6 +26,12 @@ class PdalDriver:
         Given a string URI, derive the appropriate PDAL driver.
         Reason for a str over a strict Path obj, is that Path will
         strip certain protocol info.
+
+        :param uri: A string containing the uri of the dataset.
+        :type uri: str
+        :raises MbesPcError: Could not determine driver
+        :return: A specific driver derived from :class:`PdalDriver`
+        :rtype: class:`PdalDriver`
         """
         sub_cls: Union[Type[DriverLas], Type[DriverTileDB]]
 
