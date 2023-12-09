@@ -44,6 +44,18 @@ class AlgorithmIndependentDensityCheck:
         self.histogram: Optional[list[tuple[int, int]]] = None
 
     def run(self):
+        """
+        Runs/executes the density check workflow.
+        Requires not just the point cloud dataset, but also the grid file which
+        will be used as the basis on which to define the density grid.
+        Grid properties include:
+            * Spatial extent
+            * Width
+            * Height
+            * Resolution
+            * CRS
+            * No data value (assumed to be finite)
+        """
         # TODO: check implementation
         # - generate density grid version of point cloud based on CRS and
         #   geotransform of the grid_file
@@ -55,6 +67,7 @@ class AlgorithmIndependentDensityCheck:
         hist, bins, cell_count = pdal_pipeline.density(
             self.grid_file, self.point_cloud_file
         )  # noqa: E501
+
         failed_nodes = hist[hist < self.minimum_count].sum()
         percentage = (failed_nodes / cell_count) * 100
         passed = (100 - percentage) > self.minimum_count_percentage
