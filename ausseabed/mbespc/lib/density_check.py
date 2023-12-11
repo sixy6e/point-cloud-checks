@@ -56,14 +56,7 @@ class AlgorithmIndependentDensityCheck:
             * CRS
             * No data value (assumed to be finite)
         """
-        # TODO: check implementation
-        # - generate density grid version of point cloud based on CRS and
-        #   geotransform of the grid_file
-        #     - It's believed the easiest was to get this info from users is to
-        #       use an existing grid file as a template. Doesn't matter what data
-        #       it stores, we'll just extract resolution and corner coords
-        # - Check how many nodes (pixels) of the grid are under the minimum_count
-        #   and set the failed_nodes value
+        # TODO; do we persist the density grid?
         hist, bins, cell_count = pdal_pipeline.density(
             self.grid_file, self.point_cloud_file
         )  # noqa: E501
