@@ -54,7 +54,9 @@ class GdalWriter:
         crs = dataset.crs.to_string()
         height = dataset.height
         width = dataset.width
-        origin_x, origin_y = dataset.xy(height, 0, offset="ll")
+        # ds.transform * (0, height) == dataset.xy(height-1, 0, offset="ll")
+        # PDAL defines grid origin as lower left of 2d array
+        origin_x, origin_y = dataset.transform * (0, height)
         obj = cls(
             str(out_pathname),
             resolution,
