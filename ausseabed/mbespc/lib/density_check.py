@@ -61,7 +61,7 @@ class AlgorithmIndependentDensityCheck:
             self.grid_file, self.point_cloud_file
         )  # noqa: E501
 
-        failed_nodes = hist[hist < self.minimum_count].sum()
+        failed_nodes = hist[0:self.minimum_count].sum()
         percentage = (failed_nodes / cell_count) * 100
         passed = (100 - percentage) > self.minimum_count_percentage
 
