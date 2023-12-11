@@ -12,6 +12,8 @@ import pyproj.enums
 from osgeo import gdal, osr
 from pathlib import Path
 
+gdal.UseExceptions()  # supresses GDAL 4.0 future warning
+
 
 class LasTestFileBuilder():
     """
