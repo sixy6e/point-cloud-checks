@@ -1,34 +1,62 @@
-import tempfile
 from pathlib import Path
+import pytest
 
 from ausseabed.mbespc.lib.density_check import AlgorithmIndependentDensityCheck
 from tests.ausseabed.testutils import build_las_and_tif_densities
 
 
-def test_density_check_simple():
+@pytest.fixture(scope="session")
+def data_files(tmp_path_factory):
+    test_las = tmp_path_factory.mktemp("data-files") / "test.las"
+    test_tif = tmp_path_factory.mktemp("data-files") / "test.tif"
 
     densities = [
         [1, 1, 5],
         [5, 5, 5],
         [6, 5, 7],
-        [5, 6, 9]
+        [5, 6, 9],
     ]
 
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp)
-        test_las = tmp_path.joinpath('test.las')
-        test_tif = tmp_path.joinpath('test.tif')
+    # generate temporary test files from the density array
+    build_las_and_tif_densities(test_las, test_tif, densities)
 
-        # generate temporary test files from the density array
-        build_las_and_tif_densities(test_las, test_tif, densities)
+    return test_las, test_tif
 
-        # now run these test files through the check
-        check = AlgorithmIndependentDensityCheck(test_las, test_tif, 5, 0.83)
-        check.run()
 
-        # only the two `1` density counts should fail the threshold of 5
-        assert check.failed_nodes == 2
-        assert check.total_nodes == 12
-        # check should pass as (12-2)/12 = 0.8333 are ok which is higher that
-        # the 0.83 threshold specified above
-        assert check.passed
+def test_density_check_simple(data_files):
+    """
+    Only the two `1s` should fail the threshold of 5.
+    """
+    test_las, test_tif = data_files
+    min_threshold = 5
+    min_percentage = 0.83
+    hist = [
+        (0, 0),
+        (1, 2),
+        (2, 0),
+        (3, 0),
+        (4, 0),
+        (5, 6),
+        (6, 2),
+        (7, 1),
+        (8, 0),
+        (9, 1),
+    ]  # (bin, frequency/density)
+
+    # intialise and execute
+    check = AlgorithmIndependentDensityCheck(
+        test_las, test_tif, min_threshold, min_percentage
+    )
+    check.run()
+
+    print(check.failed_nodes)
+    print(check.histogram)
+
+    assert all(
+        [
+            check.failed_nodes == 2,
+            check.total_nodes == 12,
+            check.passed,
+            all(check.histogram[i] == val for i, val in enumerate(hist)),
+        ]
+    )
