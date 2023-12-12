@@ -7,9 +7,12 @@ dependencies:
   - GDAL==3.6.0
   - numpy==1.23.5
   - pyproj==3.4.1
+  - pdal=2.6.0
   - pip
   - pip:
     - pytest
     - click==8.1.3
     - laspy
+    - rasterio==1.3.9
+    - pdal
     - git+https://github.com/ausseabed/qajson.git
