@@ -1,5 +1,4 @@
 from pathlib import Path
-import pytest
 import numpy
 from rasterio.crs import CRS
 from rasterio import MemoryFile
@@ -32,7 +31,5 @@ def test_gdal_writer_json():
             obj = pdal_writer.GdalWriter.from_dataset(inds, pth)
 
     expected = '{"type": "writers.gdal", "binmode": true, "filename": "datafile.tif", "resolution": 0.5, "origin_x": 284937.25, "origin_y": 5758297.75, "width": 10, "height": 10, "override_srs": "EPSG:32755", "output_type": "count", "gdaldriver": "TileDB", "gdalopts": ["COMPRESSION=ZSTD", "COMPRESSION_LEVEL=16", "BLOCKSIZE=256,256"], "nodata": -9999, "data_type": "int"}'  # pylint: disable=line-too-long # noqa: E501
-    print(expected)
-    print(obj.to_json())
 
     assert obj.to_json() == expected
