@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from ausseabed.mbespc.lib import pdal_reader
+from ausseabed.mbespc.lib import pdal_reader, errors
 
 
 class TestPdalDriver:
@@ -15,30 +15,36 @@ class TestPdalDriver:
 
     def test_las(self):
         """Test to detect a LAS (.las) file and load the appropriate driver."""
-        drv = pdal_reader.PdalDriver.from_uri(self.las)
+        drv = pdal_reader.PdalDriver.from_string(self.las)
         assert isinstance(drv, pdal_reader.DriverLas)
 
     def test_laz(self):
         """Test to detect a LAZ (.laz) file and load the appropriate driver."""
-        drv = pdal_reader.PdalDriver.from_uri(self.laz)
+        drv = pdal_reader.PdalDriver.from_string(self.laz)
         assert isinstance(drv, pdal_reader.DriverLas)
 
     def test_tiledb(self):
-        """Test to detect a TileDB (.tiledb) array and load the appropriate driver."""
-        drv = pdal_reader.PdalDriver.from_uri(self.tiledb)
+        """
+        Test to detect a TileDB (.tiledb) array and load the appropriate
+        driver.
+        """
+        drv = pdal_reader.PdalDriver.from_string(self.tiledb)
         assert isinstance(drv, pdal_reader.DriverTileDB)
 
     def test_tdb(self):
-        """Test to detect a TileDB (.tdb) array and load the appropriate driver."""
-        drv = pdal_reader.PdalDriver.from_uri(self.tdb)
+        """
+        Test to detect a TileDB (.tdb) array and load the appropriate driver.
+        """
+        drv = pdal_reader.PdalDriver.from_string(self.tdb)
         assert isinstance(drv, pdal_reader.DriverTileDB)
 
     def test_driver_not_found(self):
         """Test that a DriverError is raised for an unknown data type."""
-        with pytest.raises(pdal_reader.DriverError) as excinfo:
-            _ = pdal_reader.PdalDriver.from_uri(self.unknown)
+        with pytest.raises(errors.MbesPcError) as excinfo:
+            _ = pdal_reader.PdalDriver.from_string(self.unknown)
 
-        assert str(excinfo.value) == "Could not determine driver for data.unknown"
+        msg = "Could not determine driver for data.unknown"
+        assert str(excinfo.value) == msg
 
 
 @pytest.mark.parametrize(
@@ -46,11 +52,11 @@ class TestPdalDriver:
     [
         (Path("data.las"), '{"type": "readers.las", "filename": "data.las"}'),
         (Path("data.laz"), '{"type": "readers.las", "filename": "data.laz"}'),
-        (Path("data.tiledb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tiledb"}'),
-        (Path("data.tdb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tdb"}'),
+        (Path("data.tiledb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tiledb"}'),  # pylint: disable=line-too-long # noqa: E501
+        (Path("data.tdb"), '{"type": "readers.tiledb", "strict": false, "array_name": "data.tdb"}'),  # pylint: disable=line-too-long # noqa: E501
     ],
 )
 def test_to_json(uri, expected):
     """Test that the json dump is as expected."""
-    drv = pdal_reader.PdalDriver.from_uri(uri)
+    drv = pdal_reader.PdalDriver.from_string(uri)
     assert drv.to_json() == expected
