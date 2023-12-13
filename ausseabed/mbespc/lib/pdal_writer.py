@@ -40,7 +40,6 @@ class GdalWriter:
             "COMPRESSION=ZSTD",
             "COMPRESSION_LEVEL=16",
             "BLOCKSIZE=256,256",
-            "TILEDB_TIMESTAMP=1",
         ]
         self.nodata = -9999
         self.data_type = "int"
