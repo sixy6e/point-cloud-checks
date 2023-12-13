@@ -4,10 +4,10 @@ channels:
   - defaults
 dependencies:
   - python>=3.10
-  - GDAL==3.6.0
+  - GDAL==3.7.2
   - numpy==1.23.5
   - pyproj==3.4.1
-  - pdal=2.5.6
+  - pdal=2.6.0
   - pip
   - pip:
     - pytest
