@@ -30,6 +30,6 @@ def test_gdal_writer_json():
         with memfile.open() as inds:
             obj = pdal_writer.GdalWriter.from_dataset(inds, pth)
 
-    expected = '{"type": "writers.gdal", "binmode": true, "filename": "datafile.tif", "resolution": 0.5, "origin_x": 284937.25, "origin_y": 5758297.75, "width": 10, "height": 10, "override_srs": "EPSG:32755", "output_type": "count", "gdaldriver": "TileDB", "gdalopts": ["COMPRESSION=ZSTD", "COMPRESSION_LEVEL=16", "BLOCKSIZE=256,256"], "nodata": -9999, "data_type": "int"}'  # pylint: disable=line-too-long # noqa: E501
+    expected = '{"type": "writers.gdal", "binmode": true, "filename": "datafile.tif", "resolution": 0.5, "origin_x": 284937.25, "origin_y": 5758297.75, "width": 10, "height": 10, "override_srs": "EPSG:32755", "output_type": "count", "gdaldriver": "TileDB", "gdalopts": ["COMPRESSION=ZSTD", "COMPRESSION_LEVEL=16", "BLOCKXSIZE=256", "BLOCKYSIZE=256"], "nodata": -9999, "data_type": "int"}'  # pylint: disable=line-too-long # noqa: E501
 
     assert obj.to_json() == expected

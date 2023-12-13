@@ -39,7 +39,8 @@ class GdalWriter:
         self.gdalopts: List[str] = [
             "COMPRESSION=ZSTD",
             "COMPRESSION_LEVEL=16",
-            "BLOCKSIZE=256,256",
+            "BLOCKXSIZE=256",
+            "BLOCKYSIZE=256",
         ]
         self.nodata = -9999
         self.data_type = "int"
