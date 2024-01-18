@@ -133,7 +133,7 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         else:
             output_details.check_state = 'fail'
 
-        pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes
+        pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes * 100.0
 
         messages: list[str] = []
         messages.append(
@@ -155,9 +155,9 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         }
 
         data['summary'] = {
-            'total_soundings': density_check.total_nodes,
-            'percentage_over_threshold': density_check.passed,
-            'under_threshold_soundings': density_check.failed_nodes
+            'total_soundings': int(density_check.total_nodes),
+            'percentage_over_threshold': int(density_check.passed),
+            'under_threshold_soundings': int(density_check.failed_nodes)
         }
         output_details.data = data
 
