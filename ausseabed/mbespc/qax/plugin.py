@@ -105,14 +105,26 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         )
         check.outputs.execution = execution_details
 
+        density_check = AlgorithmIndependentDensityCheck(
+            grid_file=grid_file,
+            point_cloud_file=point_file,
+            minimum_count=min_soundings,
+            minimum_count_percentage=min_soundings_percentage
+        )
+
+        if point_file is None:
+            execution_details.status = "aborted"
+            execution_details.error = "Missing input point data"
+
+        if grid_file is None:
+            execution_details.status = "aborted"
+            execution_details.error = "Missing input depth data"
+
+        if execution_details.status == "aborted":
+            return
+
         try:
             # now run the check
-            density_check = AlgorithmIndependentDensityCheck(
-                grid_file=grid_file,
-                point_cloud_file=point_file,
-                minimum_count=min_soundings,
-                minimum_count_percentage=min_soundings_percentage
-            )
             density_check.run()
 
             execution_details.status = 'completed'
