@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import traceback
 from typing import Callable, Any
 from pathlib import Path
@@ -9,6 +10,8 @@ from ausseabed.qajson.model import QajsonRoot, QajsonDataLevel, QajsonCheck, \
     QajsonFile, QajsonInputs, QajsonExecution, QajsonOutputs
 
 from ausseabed.mbespc.lib.density_check import AlgorithmIndependentDensityCheck
+
+LOG = logging.getLogger(__name__)
 
 
 class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
@@ -105,23 +108,29 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         )
         check.outputs.execution = execution_details
 
+        if point_file is None:
+            msg = "Missing input point data"
+            LOG.info(msg)
+            execution_details.status = "aborted"
+            execution_details.error = msg
+
+        if grid_file is None:
+            msg = "Missing input depth data"
+            LOG.info(msg)
+            execution_details.status = "aborted"
+            execution_details.error = msg
+
+        if execution_details.status == "aborted":
+            msg = "Aborting Algorithm Independent Density Check"
+            LOG.info(msg)
+            return
+
         density_check = AlgorithmIndependentDensityCheck(
             grid_file=grid_file,
             point_cloud_file=point_file,
             minimum_count=min_soundings,
             minimum_count_percentage=min_soundings_percentage
         )
-
-        if point_file is None:
-            execution_details.status = "aborted"
-            execution_details.error = "Missing input point data"
-
-        if grid_file is None:
-            execution_details.status = "aborted"
-            execution_details.error = "Missing input depth data"
-
-        if execution_details.status == "aborted":
-            return
 
         try:
             # now run the check
