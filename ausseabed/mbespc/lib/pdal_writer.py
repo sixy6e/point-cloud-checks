@@ -34,7 +34,6 @@ class GdalWriter:
         self.height: int = height
         self.override_srs: str = output_crs
         self.output_type: str = "count"
-        # TODO; change over to GTiff once prototyping is complete
         self.gdaldriver: str = "TileDB"
         self.gdalopts: List[str] = [
             "COMPRESSION=ZSTD",

@@ -125,6 +125,12 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
             LOG.info(msg)
             return
 
+        if self.spatial_outputs_export:
+            outdir = Path(self.spatial_outputs_export_location, point_file.stem, self.name)
+            print(outdir)
+        else:
+            outdir = None
+
         density_check = AlgorithmIndependentDensityCheck(
             grid_file=grid_file,
             point_cloud_file=point_file,

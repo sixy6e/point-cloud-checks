@@ -26,6 +26,7 @@ class AlgorithmIndependentDensityCheck:
         grid_file: Path,
         minimum_count: int,
         minimum_count_percentage: float,
+        outdir: Optional[Path] = None
     ) -> None:
         self.point_cloud_file = point_cloud_file
         self.grid_file = grid_file
@@ -58,7 +59,7 @@ class AlgorithmIndependentDensityCheck:
         """
         # TODO; do we persist the density grid?
         hist, bins, cell_count = pdal_pipeline.density(
-            self.grid_file, self.point_cloud_file
+            self.grid_file, self.point_cloud_file, self.outdir
         )  # noqa: E501
 
         failed_nodes = hist[0:self.minimum_count].sum()
