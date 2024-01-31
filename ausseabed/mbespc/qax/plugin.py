@@ -126,8 +126,7 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
             return
 
         if self.spatial_outputs_export:
-            outdir = Path(self.spatial_outputs_export_location, point_file.stem, self.name)
-            print(outdir)
+            outdir = Path(self.spatial_outputs_export_location)
         else:
             outdir = None
 
@@ -135,7 +134,8 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
             grid_file=grid_file,
             point_cloud_file=point_file,
             minimum_count=min_soundings,
-            minimum_count_percentage=min_soundings_percentage
+            minimum_count_percentage=min_soundings_percentage,
+            outdir=outdir,
         )
 
         try:
