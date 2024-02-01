@@ -86,9 +86,9 @@ class AlgorithmIndependentDensityCheck:
                 gdf_pathname = outdir / "low-density-pixels.shp"
                 gdf.to_file(gdf_pathname, driver="ESRI Shapefile")
 
-        failed_nodes = hist[0:self.minimum_count].sum()
-        percentage = (failed_nodes / cell_count) * 100
-        passed = (100 - percentage) > self.minimum_count_percentage
+        failed_nodes = int(hist[0:self.minimum_count].sum())
+        percentage = float((failed_nodes / cell_count) * 100)
+        passed = bool((100 - percentage) > self.minimum_count_percentage)
 
         # total number of non-nodata nodes in grid
         self.total_nodes = cell_count

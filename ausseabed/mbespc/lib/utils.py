@@ -36,7 +36,7 @@ def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> Tuple
                 max_ = max(max_, numpy.max(d_data))
                 den_src.write(d_data, 1, window=window)
 
-    return max_, cell_count
+    return int(max_), int(cell_count)
 
 
 def histogram_point_density(
