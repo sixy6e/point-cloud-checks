@@ -185,17 +185,11 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         }
 
         data['summary'] = {
-<<<<<<< HEAD
             'total_soundings': density_check.total_nodes,
             'check_passed': density_check.passed,
             'percentage_over_threshold': density_check.percentage_passed,
             'under_threshold_soundings': density_check.percentage_failed,
             'failed_nodes': density_check.failed_nodes,
-=======
-            'total_soundings': int(density_check.total_nodes),
-            'percentage_over_threshold': int(density_check.passed),
-            'under_threshold_soundings': int(density_check.failed_nodes)
->>>>>>> 821a716 (bug fix; numpy int32 types weren't able to be serialised to json, and percentage message was including a fraction and not a percentage)
         }
 
         if self.spatial_outputs_qajson:
@@ -222,7 +216,6 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
                 )
                 warped_geom = simplified_geom.to_crs(epsg=4326)
 
-<<<<<<< HEAD
                 # qax map viewer requires MultiPolygon geoms
                 mp_box_geoms = geometry.MultiPolygon(gdf_box.geometry.values)
                 mp_pix_geoms = geometry.MultiPolygon(
@@ -231,10 +224,6 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
 
                 data['map'] = geometry.mapping(mp_box_geoms)
                 data['extents'] = geometry.mapping(mp_pix_geoms)
-=======
-                data['map'] = geojson.loads(warped_geom.to_json())
-                data['extents'] = geojson.loads(gdf_box.to_json())
->>>>>>> 76d6fda (feature: Initial pass at exporting the qa json geometry.)
 
         output_details.data = data
 
