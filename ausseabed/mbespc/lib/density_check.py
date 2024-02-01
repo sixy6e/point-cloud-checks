@@ -50,6 +50,9 @@ class AlgorithmIndependentDensityCheck:
         # second tuple item is the number of grid cells that have this
         # density
         self.histogram: Optional[list[tuple[int, int]]] = None
+        self.percentage: Optional[float] = None
+        self.percentage_passed: Optional[float] = None
+        self.percentage_failed: Optional[float] = None
 
         self.gdf: Optional[geopandas.GeoDataFrame] = None
 
@@ -88,13 +91,16 @@ class AlgorithmIndependentDensityCheck:
 
         failed_nodes = int(hist[0:self.minimum_count].sum())
         percentage = float((failed_nodes / cell_count) * 100)
-        passed = bool((100 - percentage) > self.minimum_count_percentage)
+        percentage_passed = 100 - percentage
+        passed = bool(percentage_passed > self.minimum_count_percentage)
 
         # total number of non-nodata nodes in grid
         self.total_nodes = cell_count
 
         # total number of nodes that failed density check
         self.failed_nodes = failed_nodes
+        self.percentage_failed = percentage
+        self.percentage_passed = percentage_passed
 
         self.passed = passed
 

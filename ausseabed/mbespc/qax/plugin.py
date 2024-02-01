@@ -187,8 +187,9 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
 
         data['summary'] = {
             'total_soundings': density_check.total_nodes,
-            'percentage_over_threshold': density_check.passed,
-            'under_threshold_soundings': density_check.failed_nodes
+            'check_status': density_check.passed,
+            'percentage_over_threshold': density_check.percentage_passed,
+            'under_threshold_soundings': density_check.percentage_failed
         }
 
         if self.spatial_outputs_qajson:
