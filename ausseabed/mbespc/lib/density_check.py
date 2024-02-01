@@ -92,7 +92,7 @@ class AlgorithmIndependentDensityCheck:
         failed_nodes = int(hist[0:self.minimum_count].sum())
         percentage = float((failed_nodes / cell_count) * 100)
         percentage_passed = 100 - percentage
-        passed = bool(percentage_passed > self.minimum_count_percentage)
+        passed = percentage_passed > self.minimum_count_percentage
 
         # total number of non-nodata nodes in grid
         self.total_nodes = cell_count
@@ -108,3 +108,9 @@ class AlgorithmIndependentDensityCheck:
         self.histogram = list(zip(bins.tolist(), hist.tolist()))
 
         self.gdf = gdf
+
+        LOG.info(cell_count)
+        LOG.info(passed)
+        LOG.info(percentage_passed)
+        LOG.info(percentage)
+        LOG.info(failed_nodes)
