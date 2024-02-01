@@ -95,9 +95,7 @@ def density_check(
     """ Command runs the resolution independent density check only
     """
     click.echo("Running density check")
-    if output_directory == "":
-        output_directory = None
-    else:
+    if output_directory is not None:
         output_directory = Path(output_directory)
 
     d_check = AlgorithmIndependentDensityCheck(
