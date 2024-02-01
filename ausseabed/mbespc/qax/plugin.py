@@ -164,11 +164,11 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         else:
             output_details.check_state = 'fail'
 
-        pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes
+        # pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes
 
         messages: list[str] = []
         messages.append(
-                f'{pass_percentage:.1f}% of nodes were found to have a '
+                f'{density_check.percentage_passed:.1f}% of nodes were found to have a '
                 f'sounding count above {min_soundings}. This is required to'
                 f' be {min_soundings_percentage}% of all nodes'
             )
