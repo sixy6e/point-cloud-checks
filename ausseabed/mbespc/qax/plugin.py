@@ -215,8 +215,12 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
                 )
                 warped_geom = simplified_geom.to_crs(epsg=4326)
 
-                data['map'] = geojson.loads(warped_geom.to_json())
-                data['extents'] = geojson.loads(gdf_box.to_json())
+                # qax map viewer requires MultiPolygon geoms
+                mp_box = geometry.MultiPolygon(gdf_box.geometry.values)
+                mp_gdf = geometry.MultiPolygon(warped_geom.geometry.values)
+
+                data['map'] = geojson.loads(mp_gdf.to_json())
+                data['extents'] = geojson.loads(mp_box.to_json())
 
         output_details.data = data
 
