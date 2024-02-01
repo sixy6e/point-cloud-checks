@@ -3,6 +3,10 @@ import logging
 import traceback
 from typing import Callable, Any
 from pathlib import Path
+import rasterio
+from shapely import geometry
+import geopandas
+import geojson
 
 from hyo2.qax.lib.plugin import QaxCheckToolPlugin, QaxCheckReference, \
     QaxFileType
@@ -186,6 +190,34 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
             'percentage_over_threshold': density_check.passed,
             'under_threshold_soundings': density_check.failed_nodes
         }
+
+        if self.spatial_outputs_qajson:
+            # the qax viewer isn't designed to be an all bells viewing solution
+            # nor replace tools like QGIS, TuiView ...
+            # the vector geoms need to be simplified, and all geoms transformed
+            # to epsg:4326
+            # other plugins use a buffer of 5 pixel widths and then simplify
+
+            with rasterio.open(grid_file) as ds:
+                # bounds derived from input raster
+                gdf_box = geopandas.GeoDataFrame(
+                    {"geometry": [geometry.box(*ds.bounds)]},
+                    crs=ds.crs,
+                ).to_crs(epsg=4326)
+
+                # buffering; assuming square-ish pixels ...
+                distance = 5*ds.res[0]  # used for buffering and simplifying
+                buffered = density_check.gdf.buffer(distance)
+
+                # false means use the "Douglas-Peucker algorithm"
+                simplified_geom = buffered.simplify(
+                    distance, preserve_topology=False
+                )
+                warped_geom = simplified_geom.to_crs(epsg=4326)
+
+                data['map'] = geojson.loads(warped_geom.to_json())
+                data['extents'] = geojson.loads(gdf_box.to_json())
+
         output_details.data = data
 
     def run(
