@@ -217,20 +217,16 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
                 warped_geom = simplified_geom.to_crs(epsg=4326)
 
                 # qax map viewer requires MultiPolygon geoms
+                mp_box_geoms = geometry.MultiPolygon(gdf_box.geometry.values)
+                mp_pix_geoms = geometry.MultiPolygon(
+                    warped_geom.geometry.values,
+                )
                 mp_box = geopandas.GeoDataFrame(
-                    {
-                        "geometry": geometry.MultiPolygon(
-                            gdf_box.geometry.values
-                        ),
-                    },
+                    {"geometry": [mp_box_geoms]},
                     crs=gdf_box.crs,
                 )
                 mp_gdf = geopandas.GeoDataFrame(
-                    {
-                        "geometry": geometry.MultiPolygon(
-                            warped_geom.geometry.values
-                        )
-                    },
+                    {"geometry": [mp_pix_geoms]},
                     crs=warped_geom.crs,
                 )
 
