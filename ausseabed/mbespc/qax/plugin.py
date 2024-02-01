@@ -187,10 +187,17 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
 
         data['summary'] = {
             'total_soundings': density_check.total_nodes,
-            'check_status': density_check.passed,
+            'check_passed': density_check.passed,
             'percentage_over_threshold': density_check.percentage_passed,
-            'under_threshold_soundings': density_check.percentage_failed
+            'under_threshold_soundings': density_check.percentage_failed,
+            'failed_nodes': density_check.failed_nodes,
         }
+
+        LOG.info(density_check.total_nodes)
+        LOG.info(density_check.passed)
+        LOG.info(density_check.percentage_passed)
+        LOG.info(density_check.percentage_failed)
+        LOG.info(density_check.failed_nodes)
 
         if self.spatial_outputs_qajson:
             # the qax viewer isn't designed to be an all bells viewing solution
