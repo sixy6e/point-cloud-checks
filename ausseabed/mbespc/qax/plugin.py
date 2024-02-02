@@ -232,14 +232,14 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
                 #     {"geometry": [mp_box_geoms]},
                 #     crs=gdf_box.crs,
                 # )
-                mp_gdf = geopandas.GeoDataFrame(
-                    {"geometry": [mp_pix_geoms]},
-                    crs=warped_geom.crs,
-                )
+                # mp_gdf = geopandas.GeoDataFrame(
+                #     {"geometry": [mp_pix_geoms]},
+                #     crs=warped_geom.crs,
+                # )
 
-                data['map'] = geojson.loads(mp_gdf.to_json())
+                # data['map'] = geojson.loads(mp_gdf.to_json())
                 # data['extents'] = geojson.loads(mp_box.to_json())
-                # data['map'] = geojson.dumps(mp_pix_geoms)
+                data['map'] = geojson.dumps(mp_pix_geoms)
                 data['extents'] = geojson.dumps(mp_box_geoms)
 
         output_details.data = data
