@@ -77,29 +77,42 @@ def qajson(
         "Minimum density value per cell dataset percentage"
     )
 )
+@click.option(
+    '-od', '--output-directory',
+    type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
+    help=(
+         "Specify an output directory if the density grid and "
+         "the vector geometry of flagged pixels are to persist."
+    )
+)
 def density_check(
         point_file: Path,
         grid_file: Path,
         minimum_count: int,
-        minimum_count_percentage: float
-    ):
+        minimum_count_percentage: float,
+        output_directory,
+):
     """ Command runs the resolution independent density check only
     """
     click.echo("Running density check")
-    density_check = AlgorithmIndependentDensityCheck(
-        point_cloud_file=point_file,
-        grid_file=grid_file,
+    if output_directory is not None:
+        output_directory = Path(output_directory)
+
+    d_check = AlgorithmIndependentDensityCheck(
+        point_cloud_file=Path(point_file),
+        grid_file=Path(grid_file),
         minimum_count=minimum_count,
-        minimum_count_percentage=minimum_count_percentage
+        minimum_count_percentage=minimum_count_percentage,
+        outdir=output_directory,
     )
-    density_check.run()
+    d_check.run()
 
     # print out some summary info from the check run
-    click.echo(f"Check passed: {density_check.passed}")
-    click.echo(f"{density_check.failed_nodes} / {density_check.total_nodes} failed")
+    click.echo(f"Check passed: {d_check.passed}")
+    click.echo(f"{d_check.failed_nodes} / {d_check.total_nodes} failed")
     click.echo("Histogram (density value, cells count)")
 
-    hist_strs = [f"  {d : 3}, {c : 8}" for d,c in density_check.histogram]
+    hist_strs = [f"  {d : 3}, {c : 8}" for d, c in d_check.histogram]
     click.echo("\n".join(hist_strs))
 
 

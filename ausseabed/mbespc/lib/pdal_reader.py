@@ -33,7 +33,7 @@ class PdalDriver:
         :return: A specific driver derived from :class:`PdalDriver`
         :rtype: class:`PdalDriver`
         """
-        sub_cls: Union[Type[DriverLas], Type[DriverTileDB]]
+        sub_cls: Union[Type[DriverLas], Type[DriverTileDB], Type[DriverText]]
 
         pth = Path(uri)
 
@@ -46,6 +46,8 @@ class PdalDriver:
                 sub_cls = DriverTileDB
             case ".tdb":
                 sub_cls = DriverTileDB
+            case ".csv":
+                sub_cls = DriverText
             case _:
                 msg = f"Could not determine driver for {uri}"
                 raise errors.MbesPcError(msg)
@@ -88,4 +90,14 @@ class DriverTileDB(PdalDriver):
         self.type = "readers.tiledb"
         self.strict = False
         self.array_name = str(pathname)
+        super().__init__(pathname)
+
+
+class DriverText(PdalDriver):
+    """Driver specific to CSV text files with header X,Y,Z."""
+
+    def __init__(self, pathname: Path):
+        self.type = "readers.text"
+        self.filename = str(pathname)
+        self.override_srs = "EPSG:4326"
         super().__init__(pathname)

@@ -2,6 +2,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Union, Tuple
 import numpy
 import rasterio
+from rasterio import features
+from shapely.geometry import shape
+import geopandas
 
 
 def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> Tuple[int, int]:
@@ -33,7 +36,7 @@ def update_density_no_data(grid_pathname: Path, density_pathname: Path) -> Tuple
                 max_ = max(max_, numpy.max(d_data))
                 den_src.write(d_data, 1, window=window)
 
-    return max_, cell_count
+    return int(max_), int(cell_count)
 
 
 def histogram_point_density(
@@ -101,3 +104,59 @@ def sanitize_properties(
             del data_cp[key]
 
     return data_cp  # type: ignore[return-value]
+
+
+def mask_finite(data: numpy.ndarray, nodata: int | float) -> numpy.ndarray:
+    """
+    Create a boolean mask identifying nodata and data.
+    Whilst establishing a mask is simple via standard operators, catering for
+    non-finite data is not, i.e. NaN != NaN
+    """
+    is_finite = numpy.isfinite(nodata)
+
+    if is_finite:
+        mask = data != nodata
+    else:
+        mask = numpy.isfinite(data)
+
+    return mask
+
+
+def vectorise_low_density(
+    density_pathname: Path,
+    min_soundings: int,
+) -> geopandas.GeoDataFrame:
+    """
+    Given a criterion of minimum soundings per cell, identify the cells
+    and convert the results to vector.
+
+    :param density_pathname: Pathname to the density grid file
+    :type density_pathname: class:`pathlib.Path`
+    :param min_soundings: Minumum value for a pixel to be considered valid
+    :type min_soundings: int
+    :return: A geopandas GeoDataFrame containing the vectorised cell locations
+        failing to meet the minimum criterion.
+    :rtype: geopandas.GeoDataFrame
+    """
+    geoms = []
+
+    with rasterio.open(density_pathname) as dataset:
+        nodata = dataset.nodata
+        for _, window in dataset.block_windows():
+            transform = dataset.window_transform(window)
+            data = dataset.read(1, window=window)
+            mask = mask_finite(data, nodata)
+
+            # update mask with soundings that don't meet criterion
+            mask &= data < min_soundings
+
+            # vectorise
+            shapes = features.shapes(
+                data, mask, connectivity=8, transform=transform
+            )
+            for shp, _ in shapes:
+                geoms.append(shape(shp))
+
+        gdf = geopandas.GeoDataFrame({"geometry": geoms}, crs=dataset.crs)
+
+    return gdf

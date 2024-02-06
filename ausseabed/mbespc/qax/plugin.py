@@ -1,7 +1,11 @@
 from datetime import datetime
+import logging
 import traceback
 from typing import Callable, Any
 from pathlib import Path
+import rasterio
+from shapely import geometry
+import geopandas
 
 from hyo2.qax.lib.plugin import QaxCheckToolPlugin, QaxCheckReference, \
     QaxFileType
@@ -9,6 +13,8 @@ from ausseabed.qajson.model import QajsonRoot, QajsonDataLevel, QajsonCheck, \
     QajsonFile, QajsonInputs, QajsonExecution, QajsonOutputs
 
 from ausseabed.mbespc.lib.density_check import AlgorithmIndependentDensityCheck
+
+LOG = logging.getLogger(__name__)
 
 
 class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
@@ -105,14 +111,38 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         )
         check.outputs.execution = execution_details
 
+        if point_file is None:
+            msg = "Missing input point data"
+            LOG.info(msg)
+            execution_details.status = "aborted"
+            execution_details.error = msg
+
+        if grid_file is None:
+            msg = "Missing input depth data"
+            LOG.info(msg)
+            execution_details.status = "aborted"
+            execution_details.error = msg
+
+        if execution_details.status == "aborted":
+            msg = "Aborting Algorithm Independent Density Check"
+            LOG.info(msg)
+            return
+
+        if self.spatial_outputs_export:
+            outdir = Path(self.spatial_outputs_export_location)
+        else:
+            outdir = None
+
+        density_check = AlgorithmIndependentDensityCheck(
+            grid_file=grid_file,
+            point_cloud_file=point_file,
+            minimum_count=min_soundings,
+            minimum_count_percentage=min_soundings_percentage,
+            outdir=outdir,
+        )
+
         try:
             # now run the check
-            density_check = AlgorithmIndependentDensityCheck(
-                grid_file=grid_file,
-                point_cloud_file=point_file,
-                minimum_count=min_soundings,
-                minimum_count_percentage=min_soundings_percentage
-            )
             density_check.run()
 
             execution_details.status = 'completed'
@@ -133,11 +163,11 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         else:
             output_details.check_state = 'fail'
 
-        pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes * 100.0
+        # pass_percentage = (density_check.total_nodes - density_check.failed_nodes) / density_check.total_nodes
 
         messages: list[str] = []
         messages.append(
-                f'{pass_percentage:.1f}% of nodes were found to have a '
+                f'{density_check.percentage_passed:.1f}% of nodes were found to have a '
                 f'sounding count above {min_soundings}. This is required to'
                 f' be {min_soundings_percentage}% of all nodes'
             )
@@ -155,10 +185,46 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
         }
 
         data['summary'] = {
-            'total_soundings': int(density_check.total_nodes),
-            'percentage_over_threshold': int(density_check.passed),
-            'under_threshold_soundings': int(density_check.failed_nodes)
+            'total_soundings': density_check.total_nodes,
+            'check_passed': density_check.passed,
+            'percentage_over_threshold': density_check.percentage_passed,
+            'under_threshold_soundings': density_check.percentage_failed,
+            'failed_nodes': density_check.failed_nodes,
         }
+
+        if self.spatial_outputs_qajson:
+            # the qax viewer isn't designed to be an all bells viewing solution
+            # nor replace tools like QGIS, TuiView ...
+            # the vector geoms need to be simplified, and all geoms transformed
+            # to epsg:4326
+            # other plugins use a buffer of 5 pixel widths and then simplify
+
+            with rasterio.open(grid_file) as ds:
+                # bounds derived from input raster
+                gdf_box = geopandas.GeoDataFrame(
+                    {"geometry": [geometry.box(*ds.bounds)]},
+                    crs=ds.crs,
+                ).to_crs(epsg=4326)
+
+                # buffering; assuming square-ish pixels ...
+                distance = 5*ds.res[0]  # used for buffering and simplifying
+                buffered = density_check.gdf.buffer(distance)
+
+                # false means use the "Douglas-Peucker algorithm"
+                simplified_geom = buffered.simplify(
+                    distance, preserve_topology=False
+                )
+                warped_geom = simplified_geom.to_crs(epsg=4326)
+
+                # qax map viewer requires MultiPolygon geoms
+                mp_box_geoms = geometry.MultiPolygon(gdf_box.geometry.values)
+                mp_pix_geoms = geometry.MultiPolygon(
+                    warped_geom.geometry.values,
+                )
+
+                data['map'] = geometry.mapping(mp_box_geoms)
+                data['extents'] = geometry.mapping(mp_pix_geoms)
+
         output_details.data = data
 
     def run(
