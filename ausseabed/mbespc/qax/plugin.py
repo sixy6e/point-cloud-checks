@@ -6,7 +6,6 @@ from pathlib import Path
 import rasterio
 from shapely import geometry
 import geopandas
-import geojson
 
 from hyo2.qax.lib.plugin import QaxCheckToolPlugin, QaxCheckReference, \
     QaxFileType
@@ -193,12 +192,6 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
             'failed_nodes': density_check.failed_nodes,
         }
 
-        LOG.info(density_check.total_nodes)
-        LOG.info(density_check.passed)
-        LOG.info(density_check.percentage_passed)
-        LOG.info(density_check.percentage_failed)
-        LOG.info(density_check.failed_nodes)
-
         if self.spatial_outputs_qajson:
             # the qax viewer isn't designed to be an all bells viewing solution
             # nor replace tools like QGIS, TuiView ...
@@ -228,17 +221,9 @@ class PointCloudChecksQaxPlugin(QaxCheckToolPlugin):
                 mp_pix_geoms = geometry.MultiPolygon(
                     warped_geom.geometry.values,
                 )
-                mp_box = geopandas.GeoDataFrame(
-                    {"geometry": [mp_box_geoms]},
-                    crs=gdf_box.crs,
-                )
-                mp_gdf = geopandas.GeoDataFrame(
-                    {"geometry": [mp_pix_geoms]},
-                    crs=warped_geom.crs,
-                )
 
-                data['map'] = geojson.loads(mp_gdf.to_json())
-                data['extents'] = geojson.loads(mp_box.to_json())
+                data['map'] = geometry.mapping(mp_box_geoms)
+                data['extents'] = geometry.mapping(mp_pix_geoms)
 
         output_details.data = data
 
