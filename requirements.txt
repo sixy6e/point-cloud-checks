@@ -1,0 +1,5 @@
+laspy
+geopandas>=0.14.1
+pytest
+click==8.1.3
+git+https://github.com/ausseabed/qajson.git
