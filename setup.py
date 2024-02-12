@@ -33,7 +33,9 @@ setup(
     package_data={},
     install_requires=[
         'Click',
-        'ausseabed.qajson'
+        'ausseabed.qajson',
+        'geopandas>=0.14.1',
+        'laspy',
     ],
     tests_require=['pytest'],
 )
