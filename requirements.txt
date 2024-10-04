@@ -1,4 +1,5 @@
 laspy
+fiona
 geopandas>=0.14.1
 pytest
 click==8.1.3
