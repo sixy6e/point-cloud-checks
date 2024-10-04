@@ -36,6 +36,7 @@ setup(
         'ausseabed.qajson',
         'geopandas>=0.14.1',
         'laspy',
+        'fiona',
     ],
     tests_require=['pytest'],
 )
